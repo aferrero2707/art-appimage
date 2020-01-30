@@ -29,10 +29,10 @@ after_success:
   - ls -lh
   - ls -lh out/* # Assuming you have some files in out/ that you would like to upload
   - wget -c https://github.com/aferrero2707/uploadtool/raw/master/remove.sh
-  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash ./remove.sh "nightly" "ART-${RT_BRANCH}-" ".AppImage"
+  - bash ./remove.sh "nightly" "ART-${RT_BRANCH}-" ".AppImage"
   - wget -c https://github.com/aferrero2707/uploadtool/raw/master/upload_rotate.sh
-  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash  ./upload_rotate.sh "nightly" out/* >& /dev/null
-  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash  ./upload_rotate.sh "nightly" $TRAVIS_BUILD_DIR/RawTherapee/commit-${RT_BRANCH}.hash >& /dev/null
+  - bash  ./upload_rotate.sh "nightly" out/* >& /dev/null
+  - bash  ./upload_rotate.sh "nightly" $TRAVIS_BUILD_DIR/RawTherapee/commit-${RT_BRANCH}.hash >& /dev/null
 
 branches:
   except:
