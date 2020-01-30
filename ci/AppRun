@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+HERE="$(dirname "$(readlink -f "${0}")")"
+
+#export APPIMAGE_CHECKRT_DEBUG=1
+
+
+export APPDIR="$HERE"
+
+APP=$(cat "$APPDIR/VERSION.txt" | head -n 1)
+VERSION=$(cat "$APPDIR/VERSION.txt" | head -n 2 | tail -n 1)
+AINAME=$(cat "$APPDIR/VERSION.txt" | head -n 3 | tail -n 1)
+
+DO_UPDATE=1
+if [ x"$1" = "x--enable-auto-update" ]; then
+	mkdir -p "$HOME/.local/appimages/"
+	touch "$HOME/.local/appimages/$APP-enable-update"
+	exit
+fi
+if [ x"$1" = "x--disable-auto-update" ]; then
+	rm -f "$HOME/.local/appimages/$APP-enable-update"
+	exit
+fi
+
+
+source "$APPDIR/apprun-helper.sh"
+save_environment
+make_temp_libdir
+link_libraries
+echo "AILIBDIR=$AILIBDIR"
+#export APPDIR2=$AILIBDIR
+fix_libxcb_dri3
+fix_stdlibcxx
+#fix_fontconfig
+fix_library "libfontconfig"
+fix_library "libfreetype"
+
+
+echo "DO_UPDATE: $DO_UPDATE"
+
+if [ -e "$HOME/.local/appimages/$APP-enable-update" ]; then
+
+	REPO_SLUG="Beep6581/RawTherapee" #"$1"
+	#REPO_SLUG="aferrero2707/lhdr-appimage" #"Beep6581/RawTherapee" #"$1"
+	#APP=luminance-hdr #$3
+	RELEASE_TAG="nightly" #"$2"
+
+	echo "$APPDIR/check_updates.sh $APP $AINAME $REPO_SLUG $RELEASE_TAG"
+	LATEST=$("$APPDIR/check_updates.sh" "$APP" "$AINAME" "$REPO_SLUG" "$RELEASE_TAG")
+	if [ x"$LATEST" != "x" ]; then
+		ID=$(echo "$LATEST" | cut -d'%' -f 1 | cut -d'@' -f 2)
+		AI=$(echo "$LATEST" | cut -d'%' -f 1 | cut -d'@' -f 1)
+		SHAID=$(echo "$LATEST" | cut -d'%' -f 2 | cut -d'@' -f 2)
+		#echo "./download_release.sh \"$REPO_SLUG\" \"$AI\" \"$ID\""
+		"$APPDIR/usr/bin/zenity.sh"  --question --text "New version available:\n\nhttps://github.com/${REPO_SLUG}/releases/${RELEASE_TAG}/${AI}\n\nDo you want to download and run it?\nThe new package will be stored in $HOME/.local/appimages"
+		ANSWER=$?
+		if [ x"$ANSWER" = "x0" ]; then
+			mkdir -p "$HOME/.local/appimages" || exit 1
+			asset_url="https://api.github.com/repos/$REPO_SLUG/releases/assets/$ID"
+			printf '%s\n' "" \
+				"Downloading latest RawTherapee AppImage" \
+				"    From: ${asset_url}" \
+				"      To: $HOME/.local/appimages/$AI" \
+				"Progress:"
+			curl -XGET -o "$HOME/.local/appimages/$AI" --location --header "Accept: application/octet-stream" "${asset_url}"
+			printf '\n'
+			asset_url="https://api.github.com/repos/$REPO_SLUG/releases/assets/$SHAID"
+			printf '%s\n' "" \
+				"Downloading SHA256 checksum" \
+				"    From: ${asset_url}" \
+				"      To: $HOME/.local/appimages/${AI}.sha256sum" \
+				"Progress:"
+			curl -XGET -o "$HOME/.local/appimages/${AI}.sha256sum" --location --header "Accept: application/octet-stream" "${asset_url}"
+			printf '\n'
+			TEST=$(which sha256sum)
+			if [ x"$TEST" != "x" -a -e "$HOME/.local/appimages/${AI}.sha256sum" ]; then
+				WD=$(pwd)
+				cd "$HOME/.local/appimages"
+				sha256sum --check --strict ${AI}.sha256sum
+				RESULT=$?
+				echo "SHA256 result: $RESULT"
+				if [ x"$RESULT" = "x0" ]; then
+					chmod u+x "$HOME/.local/appimages/$AI"
+					"$HOME/.local/appimages/$AI"
+					exit
+				else
+					"$APPDIR/usr/bin/zenity.sh"  --warning --text "The AppImage package appears to be corrupted and will be deleted."
+					rm -f "$HOME/.local/appimages/$AI"*
+				fi
+			else
+				"$APPDIR/usr/bin/zenity.sh"  --question --text "The autenticity of\n\nhttps://github.com/${REPO_SLUG}/releases/${RELEASE_TAG}/${AI}\ncannot be verified.\n\nDo you want to run it?"
+				ANSWER=$?
+				if [ x"$ANSWER" = "x0" ]; then
+					chmod u+x "$HOME/.local/appimages/$AI"
+					"$HOME/.local/appimages/$AI"
+					exit
+				fi
+			fi
+		fi
+	else
+		echo "Package is already at the latest version"
+	fi
+
+#exit
+
+fi
+
+
+init_environment
+
+init_gtk
+
+
+if [ "x" = "y" ]; then
+mkdir -p "$AILIBDIR/gdk-pixbuf-2.0"
+cp "${APPDIR}/usr/lib/gdk-pixbuf-2.0/loaders.cache" "$AILIBDIR/gdk-pixbuf-2.0"
+sed -i -e "s|LOADERSDIR|${APPDIR}/usr/lib/gdk-pixbuf-2.0/loaders|g" "$AILIBDIR/gdk-pixbuf-2.0/loaders.cache"
+export GDK_PIXBUF_MODULE_FILE="$AILIBDIR/gdk-pixbuf-2.0/loaders.cache"
+fi
+
+#if [[ -e /etc/fonts/fonts.conf ]]; then
+#  export FONTCONFIG_PATH=/etc/fonts
+#fi
+#export FONTCONFIG_PATH="$HERE/etc/fonts/fonts.conf"
+
+
+ldd "${APPDIR}/usr/bin/ART"
+echo ""
+echo "=========="
+echo ""
+#ldd "${APPDIR}/usr/lib/gdk-pixbuf-2.0/loaders/libpixbufloader-svg.so"
+#echo ""
+#echo "=========="
+#echo ""
+echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+#find "$APPDIR" -name "librsvg*.so*"
+#/sbin/ldconfig -p | grep 'librsvg'
+#echo ""
+#echo "=========="
+#echo ""
+if [ x"$1" = "x--cli" ]; then
+	shift
+	"${APPDIR}/usr/bin/ART-cli" "$@"
+else
+	LD_PRELOAD="${APPDIR}/usr/lib/exec_wrapper2.so" "${APPDIR}/usr/bin/ART.wrapper" "$@"
+#valgrind --tool=callgrind --instr-atstart=no "./bin/rawtherapee" "$@"
+fi
+
+rm -rf "$AILIBDIR"
+rm -f "$AIPENV"

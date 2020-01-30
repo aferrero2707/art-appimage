@@ -1,0 +1,23 @@
+*** CMakeLists.txt	Sun Aug 19 00:27:59 2018
+--- CMakeLists.txt.new	Tue Sep  4 18:02:46 2018
+***************
+*** 248,255 ****
+      endif()
+  endif()
+  
+! if(DEFINED LENSFUNDBDIR AND NOT IS_ABSOLUTE "${LENSFUNDBDIR}")
+!     set(LENSFUNDBDIR "${DATADIR}/${LENSFUNDBDIR}")
+  endif()
+  
+  # Enforce absolute paths for non-bundle builds:
+--- 248,257 ----
+      endif()
+  endif()
+  
+! if(NOT BUILD_BUNDLE)
+!     if(DEFINED LENSFUNDBDIR AND NOT IS_ABSOLUTE "${LENSFUNDBDIR}")
+!         set(LENSFUNDBDIR "${DATADIR}/${LENSFUNDBDIR}")
+!     endif()
+  endif()
+  
+  # Enforce absolute paths for non-bundle builds:

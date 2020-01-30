@@ -1,0 +1,41 @@
+language: generic
+os: linux
+dist: trusty
+compiler: g++
+sudo: required
+services: docker
+env: 
+  - RT_BRANCH=master
+
+before_script:
+  - git clone https://bitbucket.org/agriggio/art.git --branch $RT_BRANCH --single-branch RawTherapee
+  - rm -rf RawTherapee/ci
+  - cp -a ci RawTherapee
+  - cd RawTherapee
+  - bash ci/check_commit.sh ${RT_BRANCH}
+  - 'if [ -e travis.cancel ]; then
+        exit 0;
+    fi'
+  - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
+  - python support/travis_blocking_stdout.py
+  #- travis_wait 120 sleep infinity & sudo docker pull photoflow/docker-trusty-gtk3
+  #- sudo docker run -it -v $(pwd):/sources -e "RT_BRANCH=${RT_BRANCH}" photoflow/docker-trusty-gtk3 bash /sources/ci/appimage.sh
+  - travis_wait 120 sleep infinity & sudo docker pull photoflow/docker-centos7-gtk
+  - sudo docker run -it -v $(pwd):/sources -e "RT_BRANCH=${RT_BRANCH}" centos:7 bash /sources/ci/mkappimage.sh
+  #- bash ci/appimage2.sh
+after_success:
+  - cd $TRAVIS_BUILD_DIR/RawTherapee
+  - pwd
+  - ls -lh
+  - ls -lh out/* # Assuming you have some files in out/ that you would like to upload
+  - wget -c https://github.com/aferrero2707/uploadtool/raw/master/remove.sh
+  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash ./remove.sh "nightly" "ART-${RT_BRANCH}-" ".AppImage"
+  - wget -c https://github.com/aferrero2707/uploadtool/raw/master/upload_rotate.sh
+  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash  ./upload_rotate.sh "nightly" out/* >& /dev/null
+  - TRAVIS_REPO_SLUG="Beep6581/RawTherapee" bash  ./upload_rotate.sh "nightly" $TRAVIS_BUILD_DIR/RawTherapee/commit-${RT_BRANCH}.hash >& /dev/null
+
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
+    
