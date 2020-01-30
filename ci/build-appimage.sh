@@ -167,7 +167,7 @@ patch -N -p0 < /sources/ci/rt-lensfundbdir.patch #|| exit 1
 if [ x"${RT_BRANCH}" = "xreleases" ]; then
     CACHE_SUFFIX=""
 else
-    CACHE_SUFFIX="5-${RT_BRANCH}-ai"
+    CACHE_SUFFIX="1-${RT_BRANCH}-ai"
 fi
 echo "RT cache suffix: \"${CACHE_SUFFIX}\""
 mkdir -p /work/build/rt || exit 1
