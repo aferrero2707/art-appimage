@@ -6,6 +6,7 @@ sudo: required
 services: docker
 env: 
   - RT_BRANCH=master
+  - RT_BRANCH=releases
 
 before_script:
   - git clone https://bitbucket.org/agriggio/art.git --branch $RT_BRANCH --single-branch RawTherapee
@@ -29,7 +30,7 @@ after_success:
   - ls -lh
   - ls -lh out/* # Assuming you have some files in out/ that you would like to upload
   - wget -c https://github.com/aferrero2707/uploadtool/raw/master/remove.sh
-  - bash ./remove.sh "nightly" "ART-${RT_BRANCH}-" ".AppImage"
+  - bash ./remove.sh "nightly" "ART_${RT_BRANCH}_" ".AppImage"
   - wget -c https://github.com/aferrero2707/uploadtool/raw/master/upload_rotate.sh
   - bash  ./upload_rotate.sh "nightly" out/* >& /dev/null
   - bash  ./upload_rotate.sh "nightly" $TRAVIS_BUILD_DIR/RawTherapee/commit-${RT_BRANCH}.hash >& /dev/null

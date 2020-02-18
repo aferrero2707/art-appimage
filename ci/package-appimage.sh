@@ -219,7 +219,7 @@ echo ""
 # Strip binaries.
 strip_binaries
 
-export GIT_DESCRIBE=$(cd /sources && git describe)
+export GIT_DESCRIBE="$(cd /sources && git describe --tags --always)"
 echo "RT_BRANCH: ${RT_BRANCH}"
 echo "GIT_DESCRIBE: ${GIT_DESCRIBE}"
 
@@ -229,21 +229,18 @@ echo "GIT_DESCRIBE: ${GIT_DESCRIBE}"
 cd "$APPROOT"
 glibcVer="$(glibc_needed)"
 #ver="git-${RT_BRANCH}-$(date '+%Y%m%d_%H%M')-glibc${glibcVer}"
-if [ "x${RT_BRANCH}" = "xreleases" ]; then
-	rtver=$(cat AboutThisBuild.txt | grep "Version:" | head -n 1 | cut -d" " -f 2)
-	ver="${rtver}-$(date '+%Y%m%d_%H%M')"
+curr_date="$(date '+%Y%m%d')"
+if [[ $RT_BRANCH = releases ]]; then
+    ver="${GIT_DESCRIBE}"
 else
-	ver="git-${RT_BRANCH}-$(date '+%Y%m%d_%H%M')"
+    ver="${RT_BRANCH}_${GIT_DESCRIBE}_${curr_date}"
 fi
 export ARCH="x86_64"
 export VERSION="${ver}"
-export VERSION2="${RT_BRANCH}-${GIT_DESCRIBE}-$(date '+%Y%m%d')"
 echo "VERSION:  $VERSION"
-echo "VERSION2: $VERSION2"
 
 echo "${APP}-${RT_BRANCH}" > "$APPDIR/VERSION.txt"
 echo "${GIT_DESCRIBE}-$(date '+%Y%m%d')" >> "$APPDIR/VERSION.txt"
-echo "${APP}-${VERSION2}.AppImage" >> "$APPDIR/VERSION.txt"
 
 wd="$(pwd)"
 mkdir -p ../out/
@@ -270,8 +267,8 @@ fi
 
 ls ../out/*
 
-rm -f ../out/${APP}-${VERSION2}.AppImage
-mv "${AI_OUT}" ../out/${APP}-${VERSION2}.AppImage
+rm -f ../out/ART_${VERSION}.AppImage
+mv "${AI_OUT}" ../out/ART_${VERSION}.AppImage
 
 
 ########################################################################
@@ -284,6 +281,6 @@ ls ../out/*
 #echo ""
 #echo "AppImage has been uploaded to the URL above; use something like GitHub Releases for permanent storage"
 mkdir -p /sources/out
-cp ../out/${APP}-${VERSION2}.AppImage /sources/out
+cp ../out/ART_${VERSION}.AppImage /sources/out
 cd /sources/out || exit 1
-sha256sum ${APP}-${VERSION2}.AppImage > ${APP}-${VERSION2}.AppImage.sha256sum
+sha256sum ART_${VERSION}.AppImage > ART_${VERSION}.AppImage.sha256sum
