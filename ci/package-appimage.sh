@@ -200,6 +200,11 @@ printf '%s\n' "" "==================" "Contents of lensfun database:"
 ls usr/share/lensfun/version_1
 echo ""
 
+
+# install exiftool
+(cd /work && rm -rf *ExifTool* && wget https://exiftool.org/Image-ExifTool-11.86.tar.gz && tar xf Image-ExifTool-*.tar.gz) || exit 1
+(mkdir -p "$APPDIR/usr/exiftool" && cp -a /work/Image-ExifTool-*/exiftool /work/Image-ExifTool-*/lib "$APPDIR/usr/exiftool") || exit 1
+
 # Workaround for:
 # ImportError: /usr/lib/x86_64-linux-gnu/libgdk-x11-2.0.so.0: undefined symbol: XRRGetMonitors
 cp "$(ldconfig -p | grep libgdk-x11-2.0.so.0 | cut -d ">" -f 2 | xargs)" ./usr/lib/

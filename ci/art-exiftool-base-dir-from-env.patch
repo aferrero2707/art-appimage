@@ -1,0 +1,21 @@
+*** RawTherapee/rtengine/metadata.cc	2020-01-30 10:01:30.000000000 +0100
+--- RawTherapee-new/rtengine/metadata.cc	2020-02-19 17:05:39.000000000 +0100
+***************
+*** 558,564 ****
+  void Exiv2Metadata::init(const Glib::ustring &base_dir)
+  {
+      cache_.reset(new ImageCache(IMAGE_CACHE_SIZE));
+!     exiftool_base_dir = base_dir;
+      Exiv2::XmpParser::initialize();
+  }
+  
+--- 558,566 ----
+  void Exiv2Metadata::init(const Glib::ustring &base_dir)
+  {
+      cache_.reset(new ImageCache(IMAGE_CACHE_SIZE));
+!     const gchar * exiftool_base_dir_env = g_getenv("ART_EXIFTOOL_BASE_DIR");
+!     if( exiftool_base_dir_env ) exiftool_base_dir = exiftool_base_dir_env;
+!     else exiftool_base_dir = base_dir;
+      Exiv2::XmpParser::initialize();
+  }
+  

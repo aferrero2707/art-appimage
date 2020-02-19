@@ -122,6 +122,8 @@ fi
 #fi
 #export FONTCONFIG_PATH="$HERE/etc/fonts/fonts.conf"
 
+export ART_EXIFTOOL_BASE_DIR="${APPDIR}/usr/exiftool"
+
 
 ldd "${APPDIR}/usr/bin/ART"
 echo ""

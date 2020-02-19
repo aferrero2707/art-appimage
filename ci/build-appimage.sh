@@ -162,6 +162,7 @@ echo ""
 cd /sources
 export GIT_DESCRIBE=$(git describe)
 patch -N -p0 < /sources/ci/rt-lensfundbdir.patch #|| exit 1
+patch -N -p1 < /sources/ci/art-exiftool-base-dir-from-env.patch
 
 # RawTherapee build and install
 if [ x"${RT_BRANCH}" = "xreleases" ]; then
