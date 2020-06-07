@@ -32,15 +32,10 @@ libxslt-devel docbook-xsl libffi-devel \
 libvorbis-devel python-six curl \
 openssl-devel readline-devel expat-devel libtool \
 pixman-devel libffi-devel gtkmm24-devel gtkmm30-devel libcanberra-devel \
-lcms2-devel gtk-doc nano OpenEXR-devel libcroco-devel python36u python36u-libs python36u-devel python36u-pip gnome-common) || exit 1
+lcms2-devel gtk-doc nano OpenEXR-devel libcroco-devel python3 python3-libs python3-devel python3-pip gnome-common) || exit 1
 
 
 source scl_source enable devtoolset-7
-
-cd /usr/bin
-ln -f -s python3.6 python3
-ln -f -s python3.6-config python3-config
-#exit 0
 
 
 echo ""
