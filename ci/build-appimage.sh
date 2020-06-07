@@ -182,7 +182,7 @@ cmake3 \
     -DCMAKE_INSTALL_PREFIX="/usr/local/rt" \
     -DBUNDLE_BASE_INSTALL_DIR="/usr/local/rt/bin" \
     -DDATADIR=".." \
-    -DLENSFUNDBDIR="share/lensfun/version_1" \
+    -DLENSFUNDBDIR="usr/share/lensfun/version_1" \
     -DOPTION_OMP="ON" \
     -DWITH_LTO="OFF" \
     -DWITH_PROF="OFF" \
