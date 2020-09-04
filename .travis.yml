@@ -1,6 +1,6 @@
 language: generic
 os: linux
-dist: trusty
+#dist: trusty
 compiler: g++
 sudo: required
 services: docker
